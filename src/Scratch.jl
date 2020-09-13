@@ -1,10 +1,11 @@
 module Scratch
 import Base: UUID
 using Dates
+using ContextVariablesX
 
 export with_scratch_directory, scratch_dir, get_scratch!, delete_scratch!, clear_scratchspaces!, @get_scratch!
 
-const SCRATCH_DIR_OVERRIDE = Ref{Union{String,Nothing}}(nothing)
+@contextvar SCRATCH_DIR_OVERRIDE::Union{String,Nothing} = nothing
 """
     with_scratch_directory(f::Function, scratch_dir::String)
 
@@ -14,12 +15,7 @@ within this directory.  Similarly, removing a scratch space will only effect the
 scratch directory.
 """
 function with_scratch_directory(f::Function, scratch_dir::String)
-    try
-        SCRATCH_DIR_OVERRIDE[] = scratch_dir
-        f()
-    finally
-        SCRATCH_DIR_OVERRIDE[] = nothing
-    end
+    with_context(f, SCRATCH_DIR_OVERRIDE => scratch_dir)
 end
 
 """
